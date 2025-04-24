@@ -1,0 +1,60 @@
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import OneHotEncoder,StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
+def load_and_train(csv_path='C:\datasets\insurance.csv'):
+    df=pd.read_csv('C:\datasets\insurance.csv')
+    X=df.drop('charges',axis=1)
+    y=df['charges']
+
+    categorical_features = ['sex','smoker','region']
+    numeric_features=['age','bmi','children']
+
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', StandardScaler(),numeric_features),
+            ('cat',OneHotEncoder(handle_unknown='ignore'),categorical_features)
+        ]
+    )
+
+    pipeline = Pipeline(steps=[
+        ('preprocessor',preprocessor),
+        ('regressor',LinearRegression())
+    ])
+
+    pipeline.fit(X, y)
+    return pipeline
+
+def get_user_input():
+    age = float(input('Enter the age:'))
+    sex = input('Enter (Male/Female):').strip().lower()
+    bmi = float(input('Enter BMI:'))
+    children = int(input('Enter number of children:'))
+    smoker = input('Smoker? (Yes/No):').strip().lower()
+    region = input('Region? (northeast/northwest/southeast/southwest):').strip().lower()
+
+    return pd.DataFrame([{
+        'age' : age,
+        'sex' : sex,
+        'bmi' : bmi,
+        'children' : children,
+        'smoker' : smoker,
+        'region' : region,
+        
+    }])
+
+def main():
+    print("Training the model on insurance.csv...")
+    model = load_and_train()
+    print('Model.ready. Enter Customer details to get the prediction.\n')
+
+    user_df = get_user_input()
+    pred = model.predict(user_df)[0]
+    print(f"\n The predicted insurance cost is: ${pred:.2f}")
+
+
+if __name__ == '__main__': 
+    main()
+
