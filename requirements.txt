@@ -1,6 +1,6 @@
 streamlit
 langchain
 chromadb
-sentence-transfomer
+sentence-transfomers
 PyPDF2
 google-generativeai
