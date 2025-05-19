@@ -3,4 +3,4 @@ langchain
 chromadb
 sentence-transfomer
 PyPDF2
-Gemini
+google-generativeai
