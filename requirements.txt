@@ -4,3 +4,4 @@ chromadb
 sentence-transfomers
 PyPDF2
 google-generativeai
+pydantic
