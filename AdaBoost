@@ -1,0 +1,50 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.metrics import accuracy_score
+
+cols_to_encode = ['Sex', 'ExerciseAngina']
+df = pd.get_dummies(df, columns=cols_to_encode)
+
+df_encoded = df.copy()
+
+label_cols = ['ChestPainType', 'RestingECG', 'ST_Slope']
+for col in label_cols:
+    le = LabelEncoder()
+    df_encoded[col] = le.fit_transform(df_encoded[col])
+
+drop_cols = ['ChestPainType_TA', 'RestingECG_Normal']
+drop_cols = [col for col in drop_cols if col in df_encoded.columns]
+df_encoded = df_encoded.drop(columns=drop_cols)
+
+X = df_encoded.drop('HeartDisease', axis=1)
+y = df_encoded['HeartDisease']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
+
+param_dist = {
+    'n_estimators': np.arange(50, 201, 10),
+    'learning_rate': np.linspace(0.1, 2.0, 20)
+}
+
+random_search = RandomizedSearchCV(
+    AdaBoostClassifier(random_state=42),
+    param_distributions=param_dist,
+    n_iter=20,
+    cv=5,
+    random_state=42,
+    scoring='accuracy'
+)
+random_search.fit(X_train, y_train)
+
+best_model = random_search.best_estimator_
+
+model = AdaBoostClassifier(random_state=42)
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+acc = accuracy_score(y_test, y_pred)
+
+print("Accuracy:", acc)
