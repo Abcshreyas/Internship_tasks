@@ -1,0 +1,40 @@
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import  mean_squared_error, r2_score
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+    
+df = pd.read_csv('C:\datasets\insurance.csv')
+
+df = df[['bmi', 'age', 'charges']]
+df.columns = ['feature1', 'feature2', 'target']
+print("Dataset shape:", df.shape)
+
+
+fig = px.scatter_3d(df, x='feature1', y='feature2', z='target', title="3D Scatter: BMI vs Age vs Charges")
+fig.show()
+
+X = df[['feature1', 'feature2']].values
+y = df['target'].values
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=3)
+
+
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+y_pred = lr.predict(X_test)
+
+print("MSE:", mean_squared_error(y_test, y_pred))
+print("R² Score:", r2_score(y_test, y_pred))
+
+x = np.linspace(df['feature1'].min(), df['feature1'].max(), 10)
+y = np.linspace(df['feature2'].min(), df['feature2'].max(), 10)
+xGrid, yGrid = np.meshgrid(x, y)
+final = np.vstack((xGrid.ravel().reshape(1, -1), yGrid.ravel().reshape(1, -1))).T
+z_final = lr.predict(final).reshape(10, 10)
+
+fig = px.scatter_3d(df, x='feature1', y='feature2', z='target', title="3D Plot with Regression Surface")
+fig.add_trace(go.Surface(x=x, y=y, z=z_final, opacity=0.5))
+fig.show()
