@@ -1,0 +1,51 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, accuracy_score
+
+# Load dataset
+df = pd.read_csv("C:\dataset\Telco-Customer-Churn.csv")
+
+# Correctly drop the column without overwriting df
+df.drop('customerID', axis=1, inplace=True)
+
+# Safe copy
+df_encoded = df.copy()
+
+# Encode categorical variables
+label_encoders = {}
+for column in df_encoded.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df_encoded[column] = le.fit_transform(df_encoded[column])
+    label_encoders[column] = le
+
+# Features and target
+X = df_encoded.drop('Churn', axis=1)
+y = df_encoded['Churn']
+
+# Scale features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# SVM with Linear Kernel
+svm_linear = SVC(kernel='linear')
+svm_linear.fit(X_train, y_train)
+y_pred_linear = svm_linear.predict(X_test)
+
+# SVM with Polynomial Kernel
+svm_poly = SVC(kernel='poly', degree=3)
+svm_poly.fit(X_train, y_train)
+y_pred_poly = svm_poly.predict(X_test)
+
+# Evaluation
+print("SVM with Linear Kernel:")
+print("Accuracy:", accuracy_score(y_test, y_pred_linear))
+print(classification_report(y_test, y_pred_linear))
+
+print("\nSVM with Polynomial Kernel:")
+print("Accuracy:", accuracy_score(y_test, y_pred_poly))
+print(classification_report(y_test, y_pred_poly))       
